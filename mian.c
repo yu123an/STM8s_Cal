@@ -272,7 +272,24 @@ dis_time() {
   i2c_write(0x88 + a);
   i2c_stop();
 }
-
+/*
+  加载动画
+*/
+void loading() {
+  for (int i = 0; i < 12; i++) {
+    for (int j = 0; j < 8; j++) {
+      i2c_start();
+      i2c_write(0x44);
+      i2c_stop();
+      i2c_start();
+      i2c_write(0xc0 + i);
+      i2c_write(0x01 << j);
+      i2c_stop();
+      i2c_start();
+      i2c_write(0x8a);
+    }
+  }
+}
 void setup() {
   pinMode(_pin_ena, OUTPUT);
   pinMode(_pin_clk, OUTPUT);
@@ -282,6 +299,7 @@ void setup() {
   pinMode(scl, OUTPUT);
   pinMode(sda, OUTPUT);
   Serial_begin(9600);
+  loading();
 }
 
 void loop() {
