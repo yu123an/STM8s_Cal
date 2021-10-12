@@ -1,8 +1,8 @@
 /*
   Define value
 */
-#define scl   PB4
-#define sda   PB5
+#define scl   PC3
+#define sda   PA1
 #define light PD3
 #define buz   PD4
 #define _pin_ena  PC7
@@ -18,8 +18,8 @@
 #define REG_WP                0x8E
 #define REG_BURST             0xBE
 #define REG_RAM               0xFE
-#define debug       0 /*0：关闭调试；1：开启调试*/
-int a ;           /*亮度等级*/
+#define debug       1 /*0：关闭调试；1：开启调试*/
+int a = 1 ;           /*亮度等级*/
 /*
   时间变量；月份数据
 */
@@ -223,46 +223,38 @@ int nW(int Day) {
   int n_D = Nn % 7;
   //if (!n_D){
   //n_D = 7;}
-  /*Serial.print(Day);
-    Serial.print("是第");
-    Serial.print(n_W);
-    Serial.print("周的星期");
-    Serial.println(n_D);
-    return n_W * 10 + n_D;*/
+  if (debug) {
+    Serial_print_i(Day);
+    Serial_print_s("是第");
+    Serial_print_i(n_W);
+    Serial_print_s("周的星期");
+    Serial_println_i(n_D);
+    return n_W * 10 + n_D;
+  }
 }
 
 /*
   蜂鸣器
 */
-void dot(uint16_t f) {
-  for (int n = 0; n < 5; n++) {
+void dot() {
+  for (int n = 0; n < 80; n++) {
     digitalWrite(buz, 1);
-    delayMicroseconds(500000 / f);
+    delay(1);
     digitalWrite(buz, 0);
-    delayMicroseconds(500000 / f);
+    delay(1);
   }
 }
 /*
   显示时间
 */
+
 dis_time() {
   i2c_start();
-  i2c_write(0x44);
+  i2c_write(0x40);
   i2c_stop();
   i2c_start();
   i2c_write(0xc0);
   i2c_write(0x01 << (nW(day) % 10));
-  i2c_write(0x00);
-  i2c_write(0x00);
-  i2c_write(0x00);
-  i2c_write(0x00);
-  i2c_write(0x00);//6
-  i2c_write(0x00);
-  i2c_write(0x00);
-  i2c_write(0x00);
-  i2c_write(0x00);
-  i2c_write(0x00);
-  i2c_write(0x00);
   i2c_stop();
   i2c_start();
   i2c_write(0xc0 + (nW(day) / 10) );
@@ -272,6 +264,7 @@ dis_time() {
   i2c_write(0x88 + a);
   i2c_stop();
 }
+
 /*
   加载动画
 */
@@ -287,26 +280,39 @@ void loading() {
       i2c_stop();
       i2c_start();
       i2c_write(0x8a);
+      delay(5);
     }
   }
 }
 void setup() {
   pinMode(_pin_ena, OUTPUT);
   pinMode(_pin_clk, OUTPUT);
+  pinMode(buz, OUTPUT);
   pinMode(_pin_dat, INPUT);
   digitalWrite(_pin_ena, LOW);
   digitalWrite(_pin_clk, LOW);
   pinMode(scl, OUTPUT);
   pinMode(sda, OUTPUT);
   Serial_begin(9600);
+  //set_time(10,27,0,12,10,2,21);
   loading();
+  Serial_println_s("I am here");
 }
 
 void loop() {
   get_time();
-  dis_time();
+  //dot();
+
   if (minute == 0) {
-    dot(hour * 20);
+    for (int h = 0; h < hour; h++) {
+      dot();
+      delay(200);
+    }
+    loading();
   }
-  delay(59 * 1000);
+  //dot();
+  dis_time();
+  delay(29600);
+  delay(30000);
+
 }
