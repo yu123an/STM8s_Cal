@@ -304,7 +304,7 @@ void loop() {
   //dot();
 
   if (minute == 0) {
-    for (int h = 0; h < hour; h++) {
+    for (int h = 0; h < hour % 12; h++) {
       dot();
       delay(200);
     }
